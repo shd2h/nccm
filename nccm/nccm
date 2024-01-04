@@ -3051,7 +3051,7 @@ def main(*args):
             StartTime = time.time()
 
             try:
-                subprocess.run(CommandInfo['CommandLine'], check=True, shell=True)
+                subprocess.run(CommandInfo['CommandLine'], executable='/bin/bash', check=True, shell=True)
                     # ^ Connect to the ssh server
 
             except subprocess.CalledProcessError as CPE:
