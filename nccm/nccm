@@ -1240,6 +1240,7 @@ class ServerXS:
         self.KeepAlive = ""
         self.Identity = ""
         self.CustomArgs = []
+        self.PassName = ""
 
 
 class Connections:
@@ -1803,6 +1804,9 @@ class Connections:
                 if isinstance(FSL.CustomArgs, str):
                     FSL.CustomArgs = shlex.split(FSL.CustomArgs)
 
+                FSL.PassName = self.LoadedServersDict[FriendlyName].get(
+                    'passname', '')     
+
                 LogWrite.debug( {
                     'unsafe':   'ServerXSNum == {} , FriendlyName == {} , UserName == {} , '
                         'Address == {} , UserAddr == {} , Comment == {} , KeepAlive == {} , '
@@ -1898,6 +1902,10 @@ class Connections:
             # This dict contains the above CommandLine list as well as other useful
             #   information we can pass on to scripts.
 
+        # If entry has passname set, invoke sshpass & pass before ssh
+        if SelectedEntry.PassName:
+            CommandLine += ('sshpass', '-f', '<(pass {})'.format(SelectedEntry.PassName))
+
         CommandLine += (self.SshProgram, )
 
         if '<user>@' in SelectedEntry.UserAddr:
@@ -1914,6 +1922,10 @@ class Connections:
         if SelectedEntry.KeepAlive:
             CommandLine += ('-o', 'ServerAliveInterval={}'
                 .format(SelectedEntry.KeepAlive))
+
+        # necessary as the prompt to accept a changed key is not displayed to user when using sshpass.
+        if SelectedEntry.PassName:
+            CommandLine += ('-o', 'StrictHostKeyChecking=no')
 
         if SelectedEntry.Identity:
             CommandLine += ('-i', SelectedEntry.Identity)
